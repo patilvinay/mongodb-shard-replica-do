@@ -13,7 +13,7 @@ spec:
       labels:
         name: mongo-qr
     spec:
-      affinity:
+      #affinity:
       #  nodeAffinity:
       #    requiredDuringSchedulingIgnoredDuringExecution:
       #      nodeSelectorTerms:

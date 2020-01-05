@@ -37,14 +37,14 @@ spec:
         group: mongo
       name: mongo-config
     spec:
-  #    affinity:
-  #      nodeAffinity:
-  #        requiredDuringSchedulingIgnoredDuringExecution:
-  #          nodeSelectorTerms:
-  #          - matchExpressions:
-  #            - key: component
-  #              operator: In
-  #              values: ["mongo-config"]
+    #  affinity:
+    #    nodeAffinity:
+    #      requiredDuringSchedulingIgnoredDuringExecution:
+    #        nodeSelectorTerms:
+    #        - matchExpressions:
+    #          - key: component
+    #            operator: In
+    #            values: ["mongo-config"]
       containers:
       - name: mongo-config
         image: mongo:3.4.9

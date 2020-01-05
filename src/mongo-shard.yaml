@@ -36,23 +36,23 @@ spec:
     spec:
       affinity:
         podAntiAffinity:
-          preferredDuringSchedulingIgnoredDuringExecution:
-          - weight: 100
-            podAffinityTerm:
-              labelSelector:
-                matchExpressions:
-                - key: group
-                  operator: In
-                  values:
-                  - mongo
-              topologyKey: kubernetes.io/hostname
-      #  nodeAffinity:
-      #    requiredDuringSchedulingIgnoredDuringExecution:
-      #      nodeSelectorTerms:
-      #      - matchExpressions:
-      #        - key: component
-      #          operator: In
-      #          values: ["mongo-shard"]
+        #  preferredDuringSchedulingIgnoredDuringExecution:
+        #  - weight: 100
+        #    podAffinityTerm:
+        #      labelSelector:
+        #        matchExpressions:
+        #        - key: group
+        #          operator: In
+        #          values:
+        #          - mongo
+        #      topologyKey: kubernetes.io/hostname
+        nodeAffinity:
+     #     requiredDuringSchedulingIgnoredDuringExecution:
+     #       nodeSelectorTerms:
+     #      - matchExpressions:
+     #        - key: shard
+     #          operator: In
+     #          values: ["mongo-shard0"]
       containers:
       - name: mongo-shard
         image: mongo:3.4.9

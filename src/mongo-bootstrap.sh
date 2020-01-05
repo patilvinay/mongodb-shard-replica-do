@@ -84,6 +84,7 @@ function create_mongo_shard() {
    export shards=0
   shardcount=$1;
   replica=$2
+  adminpwd=$3
   printf "\n======Ensuring mongo shards are up and running===========\n"
   printf "\n======Shards $shardcount  and replica $replica===========\n"
   printf "\n=========================================================\n"
@@ -91,12 +92,12 @@ function create_mongo_shard() {
   while [[ $shards -lt $shardcount ]]; do
     echo "*** Spinning mongo-shard$shards"
     #sed "s/shard0/shard$shards/replicas: 3/replicas: $replica$g" mongo-shard.yaml >mongo-shard$shards.yaml
-    sed "s/shard0/shard$shards/g; s/replicas: 3/replicas: $replica/g" mongo-shard.yaml  >mongo-shard$shards.yaml
-    exit 1
+    sed "s/shard0/shard$shards/g; s/replicas: 3/replicas: $replica/g" mongo-shard.yaml  > mongo-shard$shards.yaml
     kubectl apply -f mongo-shard$shards.yaml
+    rm  mongo-shard$shards.yaml
     n=$(kubectl get pods | grep -w "mongo-shard$shards-." | grep Running | wc -l)
     fresh=0
-    while [ "$n" != "3" ]; do
+    while [ "$n" != $replica ]; do
       echo "Waiting for pods to be ready"
       sleep 5
       fresh=1
@@ -117,7 +118,7 @@ function create_mongo_shard() {
       echo "Shard shard$shards is already added to mongos qr. Skipping addShard"
     else
       echo "Shard shard$shards is not yet added to mongos qr. Invoking addShard"
-      kubectl exec $qrPod -- mongo admin -u admin -p "$adminPwd" --eval "sh.addShard(\"shard$shards/mongo-shard$shards-0.mongo-shard$shards-svc.default.svc.cluster.local:27017\");"
+      kubectl exec $qrPod -- mongo admin -u admin -p "$adminpwd" --eval "sh.addShard(\"shard$shards/mongo-shard$shards-0.mongo-shard$shards-svc.default.svc.cluster.local:27017\");"
     fi
     printf "===\n\n"
     shards=$(($shards + 1))
@@ -154,17 +155,14 @@ while getopts ":a:s:p:e:r:" opt; do
   esac
 done
 
-
-
-
- 
-    case $options in
+case $options in
       all)
          echo "executing all" >&2
           create_storage_class
           keyfile $adminPwd
           create_mongo_config
-          create_mongo_shard
+          create_mongo_query_router
+          create_mongo_shard $shardcount $replica $adminPwd
 
          ;;
       csc)
@@ -172,15 +170,22 @@ done
          create_storage_class
          ;;
          
-      ckf)
+      cmk)
          echo "creating keyfile" >&2
          keyfile $adminPwd
          ;;
-      cmqr)  
+      cmc)
+          echo "creating config pod" >&2
+           create_mongo_config
+          
+         ;;
+      cqr)  
          echo "creating mongo query router" >&2  
+         create_mongo_query_router
+        
          ;;
       cms)
           echo "creating mongo $shardcount shards" >&2  
-           create_mongo_shard $shardcount $replica 
-    esac
+           create_mongo_shard $shardcount $replica $adminPwd
+esac
  
